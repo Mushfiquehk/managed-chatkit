@@ -1,6 +1,10 @@
 FROM node:18-alpine AS build
 WORKDIR /app
 
+# Add build arguments for Vite
+ARG VITE_CHATKIT_WORKFLOW_ID
+ENV VITE_CHATKIT_WORKFLOW_ID=$VITE_CHATKIT_WORKFLOW_ID
+
 # Install dependencies and build
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci --legacy-peer-deps

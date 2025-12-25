@@ -64,6 +64,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
+          build-args: |
+            VITE_CHATKIT_WORKFLOW_ID=${{ secrets.VITE_CHATKIT_WORKFLOW_ID }}
 
   deploy:
     name: Deploy to AWS ECS
@@ -89,6 +91,8 @@ jobs:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: backend
           image: ${{ needs.build-and-push.outputs.backend_tag }}
+          environment-variables: |
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition for Frontend
         id: task-def-frontend
