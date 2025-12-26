@@ -26,12 +26,12 @@ def allowed_origins() -> list[str]:
         origins = [origin.strip() for origin in raw.split(",") if origin.strip()]
         if origins:
             return origins
-    return ["chat.mhkbd.me", "localhost", "127.0.0.1"]
+    return ["*"]
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
