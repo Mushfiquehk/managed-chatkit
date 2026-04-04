@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   backend:
     build:
@@ -6,7 +5,10 @@ services:
       dockerfile: backend/Dockerfile
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - VITE_CHATKIT_WORKFLOW_ID=${VITE_CHATKIT_WORKFLOW_ID}
+      - CHATKIT_WORKFLOW_ID=${CHATKIT_WORKFLOW_ID}
+      - MSAL_CLIENT_ID=${MSAL_CLIENT_ID}
+      - MSAL_TENANT_ID=${MSAL_TENANT_ID}
+      - BACKUP_PASSWORD=${BACKUP_PASSWORD:-ilovepizza}
       - ENVIRONMENT=production
     ports:
       - "8000:8000"
@@ -16,6 +18,11 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      args:
+        - CHATKIT_WORKFLOW_ID=${CHATKIT_WORKFLOW_ID}
+        - MSAL_CLIENT_ID=${MSAL_CLIENT_ID}
+        - MSAL_TENANT_ID=${MSAL_TENANT_ID}
+        - MSAL_REDIRECT_URI=${MSAL_REDIRECT_URI}
     ports:
       - "80:80"
     restart: unless-stopped

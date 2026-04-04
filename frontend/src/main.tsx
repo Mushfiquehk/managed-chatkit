@@ -1,5 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { MsalProvider } from "@azure/msal-react";
+import { msalInstance, useMsalAuth } from "./lib/msalConfig";
 import App from "./App";
 import "./index.css";
 
@@ -10,7 +12,12 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
-    <App />
+    {useMsalAuth && msalInstance ? (
+      <MsalProvider instance={msalInstance}>
+        <App />
+      </MsalProvider>
+    ) : (
+      <App />
+    )}
   </StrictMode>
 );
-

@@ -65,7 +65,10 @@ jobs:
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
           build-args: |
-            VITE_CHATKIT_WORKFLOW_ID=${{ secrets.VITE_CHATKIT_WORKFLOW_ID }}
+            CHATKIT_WORKFLOW_ID=${{ secrets.CHATKIT_WORKFLOW_ID }}
+            MSAL_CLIENT_ID=${{ secrets.MSAL_CLIENT_ID }}
+            MSAL_TENANT_ID=${{ secrets.MSAL_TENANT_ID }}
+            MSAL_REDIRECT_URI=${{ secrets.MSAL_REDIRECT_URI }}
 
   deploy:
     name: Deploy to AWS ECS

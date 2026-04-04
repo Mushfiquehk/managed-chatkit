@@ -1,12 +1,14 @@
-import path from "node:path";
+import * as path from "node:path";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 
-const apiTarget = process.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+const apiTarget = process.env.API_URL ?? "http://127.0.0.1:8000";
 
 export default defineConfig({
   // Allow env files to live one level above the frontend directory
   envDir: path.resolve(__dirname, ".."),
+  // Expose legacy env names used by this app without forcing VITE_ renames.
+  envPrefix: ["VITE_", "CHATKIT_", "MSAL_"],
   plugins: [react()],
   server: {
     port: 3000,

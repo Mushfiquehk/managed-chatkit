@@ -8,9 +8,11 @@ import uuid
 from typing import Any, Mapping
 
 import httpx
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
+from app.auth import AuthenticatedUser, get_current_user
 
 DEFAULT_CHATKIT_BASE = "https://api.openai.com"
 SESSION_COOKIE_NAME = "chatkit_session_id"
@@ -43,8 +45,28 @@ async def health() -> Mapping[str, str]:
     return {"status": "ok"}
 
 
+@app.post("/api/auth/verify-password")
+async def verify_password(request: Request) -> JSONResponse:
+    """Verify password for basic auth fallback."""
+    body = await read_json_body(request)
+    provided_password = body.get("password", "")
+
+    backup_password = os.getenv("BACKUP_PASSWORD", "ilovepizza")
+
+    if isinstance(provided_password, str) and provided_password == backup_password:
+        return JSONResponse({"success": True}, status_code=200)
+    else:
+        return JSONResponse(
+            {"error": "Invalid password"},
+            status_code=401,
+        )
+
+
 @app.post("/api/create-session")
-async def create_session(request: Request) -> JSONResponse:
+async def create_session(
+    request: Request,
+    user: AuthenticatedUser | None = Depends(get_current_user),
+) -> JSONResponse:
     """Exchange a workflow id for a ChatKit client secret."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
@@ -55,7 +77,11 @@ async def create_session(request: Request) -> JSONResponse:
     if not workflow_id:
         return respond({"error": "Missing workflow id"}, 400)
 
-    user_id, cookie_value = resolve_user(request.cookies)
+    if user is not None:
+        user_id = user.oid
+        cookie_value = None
+    else:
+        user_id, cookie_value = resolve_user(request.cookies)
     api_base = chatkit_api_base()
 
     try:
@@ -144,7 +170,7 @@ def resolve_workflow_id(body: Mapping[str, Any]) -> str | None:
         workflow_id = workflow.get("id")
     workflow_id = workflow_id or body.get("workflowId")
     env_workflow = os.getenv("CHATKIT_WORKFLOW_ID") or os.getenv(
-        "VITE_CHATKIT_WORKFLOW_ID"
+        "CHATKIT_WORKFLOW_ID"
     )
     if not workflow_id and env_workflow:
         workflow_id = env_workflow
@@ -164,7 +190,7 @@ def resolve_user(cookies: Mapping[str, str]) -> tuple[str, str | None]:
 def chatkit_api_base() -> str:
     return (
         os.getenv("CHATKIT_API_BASE")
-        or os.getenv("VITE_CHATKIT_API_BASE")
+        or os.getenv("CHATKIT_API_BASE")
         or DEFAULT_CHATKIT_BASE
     )
 
